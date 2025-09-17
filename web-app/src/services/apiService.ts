@@ -65,3 +65,28 @@ export const apiService = {
     return response.data
   },
 }
+
+// API endpoints
+export const endpoints = {
+  // Authentication
+  auth: {
+    login: '/auth/login',
+    register: '/auth/register',
+    me: '/users/me',
+  },
+
+  // Announcements
+  announcements: {
+    list: '/announcements',
+    detail: (id: string) => `/announcements/${id}`,
+  },
+
+  // Crawlers
+  crawlers: {
+    list: '/crawlers/list',
+    runAll: '/crawlers/run-all',
+    runSingle: (name: string) => `/crawlers/run/${name}`,
+    runByCategory: (category: string) => `/crawlers/run-by-category?category=${category}`,
+    stats: '/crawlers/stats',
+  },
+}

@@ -44,18 +44,19 @@ const AnnouncementDetailScreen: React.FC = () => {
   const [isBookmarked, setIsBookmarked] = useState(false);
 
   // Get announcement ID from route params
-  const announcementId = (route.params as any)?.announcement?.id || (route.params as any)?.announcementId;
+  const announcementId = (route.params as any)?.announcementId;
+  const announcementFromParams = (route.params as any)?.announcement;
 
   useEffect(() => {
-    if (announcementId && !currentAnnouncement) {
+    if (announcementId && !currentAnnouncement && !announcementFromParams) {
       dispatch(fetchAnnouncementById(announcementId));
     }
-  }, [announcementId, currentAnnouncement, dispatch]);
+  }, [announcementId, currentAnnouncement, announcementFromParams, dispatch]);
 
   const handleOpenSource = async () => {
-    if (currentAnnouncement?.source_url) {
+    if (announcement?.source_url) {
       try {
-        await Linking.openURL(currentAnnouncement.source_url);
+        await Linking.openURL(announcement.source_url);
       } catch (error) {
         Alert.alert('Error', 'Could not open the source URL');
       }
@@ -63,11 +64,11 @@ const AnnouncementDetailScreen: React.FC = () => {
   };
 
   const handleShare = async () => {
-    if (currentAnnouncement) {
+    if (announcement) {
       try {
         await Share.share({
-          message: `${currentAnnouncement.title}\n\n${currentAnnouncement.summary || currentAnnouncement.content || ''}\n\nSource: ${currentAnnouncement.source_url}`,
-          title: currentAnnouncement.title,
+          message: `${announcement.title}\n\n${announcement.summary || announcement.content || ''}\n\nSource: ${announcement.source_url}`,
+          title: announcement.title,
         });
       } catch (error) {
         Alert.alert('Error', 'Could not share the announcement');
@@ -85,7 +86,7 @@ const AnnouncementDetailScreen: React.FC = () => {
     Alert.alert('Create Subscription', 'This will create a subscription for similar announcements.');
   };
 
-  if (isLoading) {
+  if (isLoading && !announcementFromParams) {
     return (
       <SafeAreaView style={styles.container}>
         <View style={styles.loadingContainer}>
@@ -96,7 +97,7 @@ const AnnouncementDetailScreen: React.FC = () => {
     );
   }
 
-  if (!currentAnnouncement) {
+  if (!announcement) {
     return (
       <SafeAreaView style={styles.container}>
         <View style={styles.errorContainer}>
@@ -116,7 +117,7 @@ const AnnouncementDetailScreen: React.FC = () => {
     );
   }
 
-  const announcement = currentAnnouncement;
+  const announcement = announcementFromParams || currentAnnouncement;
   const isUrgent = announcement.application_deadline 
     ? isDeadlineUrgent(announcement.application_deadline)
     : false;

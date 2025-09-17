@@ -154,6 +154,15 @@ export const endpoints = {
     pushToken: '/users/push-token',
     deletePushToken: (token: string) => `/users/push-token/${token}`,
   },
+
+  // Crawlers
+  crawlers: {
+    list: '/crawlers/list',
+    runAll: '/crawlers/run-all',
+    runSingle: (name: string) => `/crawlers/run/${name}`,
+    runByCategory: (category: string) => `/crawlers/run-by-category?category=${category}`,
+    stats: '/crawlers/stats',
+  },
 };
 
 export default apiService;

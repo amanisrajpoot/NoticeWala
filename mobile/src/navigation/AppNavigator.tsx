@@ -18,6 +18,7 @@ import SearchScreen from '@screens/main/SearchScreen';
 import NotificationsScreen from '@screens/main/NotificationsScreen';
 import ProfileScreen from '@screens/main/ProfileScreen';
 import AnnouncementDetailScreen from '@screens/announcement/AnnouncementDetailScreen';
+import NotificationDetailScreen from '@screens/notification/NotificationDetailScreen';
 import SubscriptionScreen from '@screens/subscription/SubscriptionScreen';
 
 const Stack = createStackNavigator();
@@ -86,6 +87,14 @@ const AppNavigator: React.FC = () => {
         options={{
           headerShown: true,
           title: 'Announcement Details',
+        }}
+      />
+      <Stack.Screen 
+        name="NotificationDetail" 
+        component={NotificationDetailScreen}
+        options={{
+          headerShown: true,
+          title: 'Notification Details',
         }}
       />
       <Stack.Screen 

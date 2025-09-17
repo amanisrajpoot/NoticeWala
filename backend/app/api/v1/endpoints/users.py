@@ -6,9 +6,10 @@ from typing import Optional
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 import structlog
+import uuid
 
 from app.core.database import get_db
-from app.core.security import get_current_user_id
+from app.api.v1.endpoints.auth import get_current_user_id_dependency
 from app.models.user import User, PushToken
 from app.schemas.auth import UserResponse
 from app.schemas.user import UserUpdate, PushTokenCreate
@@ -19,13 +20,15 @@ router = APIRouter()
 
 @router.get("/me", response_model=UserResponse)
 async def get_current_user_profile(
-    current_user_id: str = Depends(get_current_user_id),
+    current_user_id: str = Depends(get_current_user_id_dependency),
     db: Session = Depends(get_db)
 ):
     """Get current user profile"""
     
     try:
-        user = db.query(User).filter(User.id == current_user_id).first()
+        # Convert string user_id back to UUID for database query
+        user_uuid = uuid.UUID(current_user_id)
+        user = db.query(User).filter(User.id == user_uuid).first()
         
         if not user:
             raise HTTPException(
@@ -56,13 +59,14 @@ async def get_current_user_profile(
 @router.put("/me", response_model=UserResponse)
 async def update_current_user(
     user_update: UserUpdate,
-    current_user_id: str = Depends(get_current_user_id),
+    current_user_id: str = Depends(get_current_user_id_dependency),
     db: Session = Depends(get_db)
 ):
     """Update current user profile"""
     
     try:
-        user = db.query(User).filter(User.id == current_user_id).first()
+        user_uuid = uuid.UUID(current_user_id)
+        user = db.query(User).filter(User.id == user_uuid).first()
         
         if not user:
             raise HTTPException(
@@ -117,7 +121,7 @@ async def update_current_user(
 @router.post("/push-token")
 async def register_push_token(
     token_data: PushTokenCreate,
-    current_user_id: str = Depends(get_current_user_id),
+    current_user_id: str = Depends(get_current_user_id_dependency),
     db: Session = Depends(get_db)
 ):
     """Register push notification token for user"""
@@ -166,7 +170,7 @@ async def register_push_token(
 @router.delete("/push-token/{token}")
 async def unregister_push_token(
     token: str,
-    current_user_id: str = Depends(get_current_user_id),
+    current_user_id: str = Depends(get_current_user_id_dependency),
     db: Session = Depends(get_db)
 ):
     """Unregister push notification token"""

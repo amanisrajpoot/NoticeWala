@@ -5,6 +5,7 @@ Announcement schemas
 from typing import List, Optional, Dict, Any
 from pydantic import BaseModel, HttpUrl
 from datetime import datetime
+import uuid
 
 
 class ExamDate(BaseModel):
@@ -24,7 +25,7 @@ class Location(BaseModel):
 
 class SourceResponse(BaseModel):
     """Schema for source information"""
-    id: str
+    id: uuid.UUID
     name: str
     type: str
     category: Optional[str] = None
@@ -36,7 +37,7 @@ class SourceResponse(BaseModel):
 
 class AttachmentResponse(BaseModel):
     """Schema for attachment information"""
-    id: str
+    id: uuid.UUID
     filename: str
     file_url: HttpUrl
     file_type: Optional[str] = None
@@ -49,7 +50,7 @@ class AttachmentResponse(BaseModel):
 
 class AnnouncementResponse(BaseModel):
     """Schema for announcement response"""
-    id: str
+    id: uuid.UUID
     title: str
     summary: Optional[str] = None
     content: Optional[str] = None

@@ -6,6 +6,7 @@ from datetime import timedelta
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from sqlalchemy.orm import Session
+from pydantic import BaseModel
 import structlog
 
 from app.core.database import get_db
@@ -15,13 +16,21 @@ from app.core.security import (
     get_password_hash, 
     create_access_token, 
     create_refresh_token,
-    verify_token
+    verify_token,
+    get_current_user_id
 )
 from app.models.user import User
 from app.schemas.auth import Token, UserCreate, UserResponse
 
 logger = structlog.get_logger()
 router = APIRouter()
+
+# OAuth2 scheme
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/login")
+
+def get_current_user_id_dependency(token: str = Depends(oauth2_scheme)) -> str:
+    """FastAPI dependency to get current user ID from token"""
+    return get_current_user_id(token)
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="api/v1/auth/login")
 
@@ -76,25 +85,27 @@ async def register(user_data: UserCreate, db: Session = Depends(get_db)):
         )
 
 
+class UserLogin(BaseModel):
+    email: str
+    password: str
+
+
 @router.post("/login", response_model=Token)
 async def login(
-    form_data: OAuth2PasswordRequestForm = Depends(),
+    login_data: UserLogin,
     db: Session = Depends(get_db)
 ):
     """Authenticate user and return access token"""
     
     try:
-        # Find user by email or username
-        user = db.query(User).filter(
-            (User.email == form_data.username) | 
-            (User.username == form_data.username)
-        ).first()
+        # Find user by email
+        user = db.query(User).filter(User.email == login_data.email).first()
         
-        if not user or not verify_password(form_data.password, user.hashed_password):
-            logger.warning("Invalid login attempt", username=form_data.username)
+        if not user or not verify_password(login_data.password, user.hashed_password):
+            logger.warning("Invalid login attempt", email=login_data.email)
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Incorrect email/username or password",
+                detail="Incorrect email or password",
                 headers={"WWW-Authenticate": "Bearer"},
             )
         
@@ -180,7 +191,7 @@ async def refresh_token(
 
 @router.get("/me", response_model=UserResponse)
 async def get_current_user(
-    current_user_id: str = Depends(get_current_user_id),
+    current_user_id: str = Depends(get_current_user_id_dependency),
     db: Session = Depends(get_db)
 ):
     """Get current user information"""

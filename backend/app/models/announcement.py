@@ -67,13 +67,13 @@ class Source(Base):
     type = Column(String(50), nullable=False)  # rss, website, api, etc.
     
     # Crawling configuration
-    crawl_frequency = Column(Integer, default=3600)  # seconds
+    update_frequency = Column(String(50), default="daily")  # daily, weekly, etc.
     last_crawled = Column(DateTime(timezone=True))
     is_active = Column(Boolean, default=True)
     
     # Metadata
     description = Column(Text)
-    category = Column(String(100))  # government, university, coaching, etc.
+    categories = Column(JSON)  # List of categories
     region = Column(String(100))
     
     # Quality metrics

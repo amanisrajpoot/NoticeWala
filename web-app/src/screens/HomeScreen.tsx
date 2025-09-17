@@ -9,20 +9,26 @@ import {
   Grid,
   Button,
   Chip,
+  IconButton,
+  CircularProgress,
 } from '@mui/material'
-import { School, Notifications, Search, Person } from '@mui/icons-material'
+import { School, Notifications, Search, Person, Refresh } from '@mui/icons-material'
 import { useAppDispatch, useAppSelector } from '../store/hooks'
-import { fetchAnnouncements } from '../store/slices/announcementSlice'
+import { fetchAnnouncements, refreshAnnouncements } from '../store/slices/announcementSlice'
 
 const HomeScreen: React.FC = () => {
   const dispatch = useAppDispatch()
   const navigate = useNavigate()
   const { user } = useAppSelector((state) => state.auth)
-  const { announcements, loading } = useAppSelector((state) => state.announcements)
+  const { announcements, loading, isRefreshing } = useAppSelector((state) => state.announcements)
 
   useEffect(() => {
-    dispatch(fetchAnnouncements({ limit: 5 }))
+    dispatch(fetchAnnouncements({ per_page: 6 }))
   }, [dispatch])
+
+  const handleRefresh = async () => {
+    await dispatch(refreshAnnouncements())
+  }
 
   const quickActions = [
     {
@@ -107,16 +113,28 @@ const HomeScreen: React.FC = () => {
             <Typography variant="h5" component="h2">
               Recent Announcements
             </Typography>
-            <Button 
-              variant="outlined" 
-              onClick={() => navigate('/announcements')}
-            >
-              View All
-            </Button>
+            <Box sx={{ display: 'flex', gap: 1 }}>
+              <IconButton 
+                onClick={handleRefresh}
+                disabled={isRefreshing}
+                color="primary"
+                title="Refresh announcements"
+              >
+                {isRefreshing ? <CircularProgress size={20} /> : <Refresh />}
+              </IconButton>
+              <Button 
+                variant="outlined" 
+                onClick={() => navigate('/announcements')}
+              >
+                View All
+              </Button>
+            </Box>
           </Box>
 
           {loading ? (
-            <Typography>Loading announcements...</Typography>
+            <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
+              <CircularProgress />
+            </Box>
           ) : announcements.length > 0 ? (
             <Grid container spacing={3}>
               {announcements.slice(0, 3).map((announcement) => (
@@ -127,27 +145,29 @@ const HomeScreen: React.FC = () => {
                         {announcement.title}
                       </Typography>
                       <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                        {announcement.description.length > 100 
-                          ? `${announcement.description.substring(0, 100)}...`
-                          : announcement.description
+                        {announcement.summary && announcement.summary.length > 100 
+                          ? `${announcement.summary.substring(0, 100)}...`
+                          : announcement.summary || 'No summary available'
                         }
                       </Typography>
                       <Box sx={{ display: 'flex', gap: 1, mb: 2 }}>
+                        {announcement.categories && announcement.categories.length > 0 && (
+                          <Chip 
+                            label={announcement.categories[0]} 
+                            size="small" 
+                            color="primary" 
+                            variant="outlined" 
+                          />
+                        )}
                         <Chip 
-                          label={announcement.category} 
-                          size="small" 
-                          color="primary" 
-                          variant="outlined" 
-                        />
-                        <Chip 
-                          label={announcement.source_name} 
+                          label={announcement.source.name} 
                           size="small" 
                           color="secondary" 
                           variant="outlined" 
                         />
                       </Box>
                       <Typography variant="caption" color="text.secondary">
-                        Published: {new Date(announcement.published_date).toLocaleDateString()}
+                        Published: {new Date(announcement.publish_date || announcement.created_at).toLocaleDateString()}
                       </Typography>
                     </CardContent>
                   </Card>

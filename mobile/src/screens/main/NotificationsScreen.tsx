@@ -20,6 +20,7 @@ import {
   Badge,
 } from 'react-native-paper';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useNavigation } from '@react-navigation/native';
 import { useAppDispatch, useAppSelector } from '@store/hooks';
 import {
   fetchNotifications,
@@ -32,6 +33,7 @@ import { formatDate } from '@utils/helpers';
 import { NotificationData } from '@store/slices/notificationSlice';
 
 const NotificationsScreen: React.FC = () => {
+  const navigation = useNavigation();
   const dispatch = useAppDispatch();
   
   const {
@@ -97,6 +99,13 @@ const NotificationsScreen: React.FC = () => {
     }
   }, [dispatch]);
 
+  const handleNotificationPress = useCallback((notification: NotificationData) => {
+    console.log('Navigating to notification detail:', notification.id);
+    navigation.navigate('NotificationDetail', { 
+      notification: notification 
+    });
+  }, [navigation]);
+
   const handleFilterChange = useCallback((status: string | undefined) => {
     setFilterStatus(status);
     setMenuVisible(false);
@@ -140,6 +149,7 @@ const NotificationsScreen: React.FC = () => {
           styles.notificationCard,
           !isRead && styles.unreadNotification
         ]}
+        onPress={() => handleNotificationPress(item)}
       >
         <Card.Content style={styles.notificationContent}>
           <View style={styles.notificationHeader}>

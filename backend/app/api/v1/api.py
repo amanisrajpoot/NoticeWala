@@ -3,7 +3,7 @@ Main API router for v1 endpoints
 """
 
 from fastapi import APIRouter
-from app.api.v1.endpoints import announcements, auth, health, users, subscriptions, notifications
+from app.api.v1.endpoints import announcements, auth, health, users, subscriptions, notifications, crawlers
 
 api_router = APIRouter()
 
@@ -42,4 +42,10 @@ api_router.include_router(
     notifications.router, 
     prefix="/notifications", 
     tags=["notifications"]
+)
+
+api_router.include_router(
+    crawlers.router, 
+    prefix="/crawlers", 
+    tags=["crawlers"]
 )

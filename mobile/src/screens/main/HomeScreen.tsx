@@ -27,6 +27,7 @@ import {
   fetchCategories,
   setFilters,
   clearAnnouncements,
+  refreshAnnouncements,
 } from '@store/slices/announcementSlice';
 import {
   fetchNotifications,
@@ -94,9 +95,9 @@ const HomeScreen: React.FC = () => {
   }, [hasMore, isLoading, filters, announcements.length, dispatch]);
 
   const handleRefresh = useCallback(async () => {
-    dispatch(clearAnnouncements());
-    await loadAnnouncements();
-  }, [dispatch, loadAnnouncements]);
+    // Use the new refresh functionality that runs crawlers first
+    await dispatch(refreshAnnouncements());
+  }, [dispatch]);
 
   const handleSearch = useCallback((query: string) => {
     setSearchQuery(query);
@@ -114,7 +115,11 @@ const HomeScreen: React.FC = () => {
   }, [loadAnnouncements]);
 
   const handleAnnouncementPress = useCallback((announcement: Announcement) => {
-    navigation.navigate('AnnouncementDetail' as never, { announcement } as never);
+    console.log('Navigating to announcement detail:', announcement.id);
+    navigation.navigate('AnnouncementDetail', { 
+      announcementId: announcement.id,
+      announcement: announcement 
+    });
   }, [navigation]);
 
   const handleNotificationsPress = useCallback(() => {
@@ -163,10 +168,22 @@ const HomeScreen: React.FC = () => {
           )}
 
           <View style={styles.announcementMeta}>
-            <Text style={styles.sourceName}>{item.source.name}</Text>
-            <Text style={styles.publishDate}>
-              {formatDate(item.publish_date || item.created_at, 'relative')}
-            </Text>
+            <View style={styles.metaLeft}>
+              <Text style={styles.sourceName}>{item.source.name}</Text>
+              <Text style={styles.publishDate}>
+                {formatDate(item.publish_date || item.created_at, 'relative')}
+              </Text>
+            </View>
+            <View style={styles.metaRight}>
+              <Chip
+                mode="outlined"
+                compact
+                style={styles.priorityChip}
+                textStyle={styles.priorityChipText}
+              >
+                {Math.round(item.priority_score * 10)}%
+              </Chip>
+            </View>
           </View>
 
           {item.categories && item.categories.length > 0 && (
@@ -428,6 +445,22 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     marginBottom: spacing.sm,
+  },
+  metaLeft: {
+    flex: 1,
+  },
+  metaRight: {
+    alignItems: 'flex-end',
+  },
+  priorityChip: {
+    backgroundColor: colors.primary + '20',
+    borderColor: colors.primary,
+    height: 24,
+  },
+  priorityChipText: {
+    color: colors.primary,
+    fontSize: 10,
+    fontWeight: '600',
   },
   sourceName: {
     ...typography.caption,

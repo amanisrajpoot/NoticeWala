@@ -177,6 +177,25 @@ export const fetchSources = createAsyncThunk(
   }
 );
 
+export const refreshAnnouncements = createAsyncThunk(
+  'announcements/refreshAnnouncements',
+  async (_, { rejectWithValue }) => {
+    try {
+      // First run crawlers to get fresh data
+      await apiService.post(endpoints.crawlers.runAll);
+      
+      // Then fetch the updated announcements
+      const response = await apiService.get<AnnouncementListResponse>(
+        endpoints.announcements.list
+      );
+      
+      return response;
+    } catch (error: any) {
+      return rejectWithValue(error.message || 'Failed to refresh announcements');
+    }
+  }
+);
+
 const announcementSlice = createSlice({
   name: 'announcements',
   initialState,
@@ -271,6 +290,25 @@ const announcementSlice = createSlice({
         state.sources = action.payload;
       })
       .addCase(fetchSources.rejected, (state, action) => {
+        state.error = action.payload as string;
+      });
+
+    // Refresh announcements
+    builder
+      .addCase(refreshAnnouncements.pending, (state) => {
+        state.isRefreshing = true;
+        state.error = null;
+      })
+      .addCase(refreshAnnouncements.fulfilled, (state, action) => {
+        state.isRefreshing = false;
+        const { items, total } = action.payload;
+        state.announcements = items;
+        state.totalCount = total;
+        state.hasMore = state.announcements.length < total;
+        state.filters.skip = items.length;
+      })
+      .addCase(refreshAnnouncements.rejected, (state, action) => {
+        state.isRefreshing = false;
         state.error = action.payload as string;
       });
   },
