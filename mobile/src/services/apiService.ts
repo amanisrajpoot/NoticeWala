@@ -4,13 +4,12 @@
  */
 
 import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios';
-import Config from 'react-native-config';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { store } from '@store/index';
-import { clearAuth } from '@store/slices/authSlice';
+import { store } from '../store/index';
+import { clearAuth } from '../store/slices/authSlice';
 
 // API Configuration
-const API_BASE_URL = Config.API_BASE_URL || 'http://localhost:8000/api/v1';
+const API_BASE_URL = process.env.REACT_APP_API_BASE_URL || 'http://localhost:8000/api/v1';
 const REQUEST_TIMEOUT = 30000; // 30 seconds
 
 // Create axios instance
