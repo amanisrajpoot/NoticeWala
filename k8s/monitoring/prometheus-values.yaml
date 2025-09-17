@@ -1,0 +1,69 @@
+# Prometheus configuration for NoticeWala
+prometheus:
+  prometheusSpec:
+    retention: 30d
+    storageSpec:
+      volumeClaimTemplate:
+        spec:
+          accessModes: ["ReadWriteOnce"]
+          resources:
+            requests:
+              storage: 50Gi
+    serviceMonitorSelectorNilUsesHelmValues: false
+    ruleSelectorNilUsesHelmValues: false
+    additionalScrapeConfigs:
+      - job_name: 'noticewala-backend'
+        static_configs:
+          - targets: ['backend:8000']
+        metrics_path: '/metrics'
+        scrape_interval: 30s
+
+grafana:
+  enabled: true
+  adminPassword: admin123
+  service:
+    type: LoadBalancer
+  persistence:
+    enabled: true
+    size: 10Gi
+  dashboardProviders:
+    dashboardproviders.yaml:
+      apiVersion: 1
+      providers:
+      - name: 'noticewala'
+        orgId: 1
+        folder: 'NoticeWala'
+        type: file
+        disableDeletion: false
+        editable: true
+        options:
+          path: /var/lib/grafana/dashboards/noticewala
+  dashboards:
+    noticewala:
+      noticewala-overview:
+        gnetId: 1860
+        revision: 1
+        datasource: Prometheus
+
+alertmanager:
+  enabled: true
+  config:
+    global:
+      smtp_smarthost: 'smtp.gmail.com:587'
+      smtp_from: 'alerts@noticewala.com'
+    route:
+      group_by: ['alertname']
+      group_wait: 10s
+      group_interval: 10s
+      repeat_interval: 1h
+      receiver: 'web.hook'
+    receivers:
+    - name: 'web.hook'
+      email_configs:
+      - to: 'admin@noticewala.com'
+        subject: 'NoticeWala Alert: {{ .GroupLabels.alertname }}'
+        body: |
+          {{ range .Alerts }}
+          Alert: {{ .Annotations.summary }}
+          Description: {{ .Annotations.description }}
+          {{ end }}

@@ -1,0 +1,207 @@
+name: Mobile CI/CD
+
+on:
+  push:
+    branches: [ main, develop ]
+    paths: [ 'mobile/**', '.github/workflows/mobile-ci.yml' ]
+  pull_request:
+    branches: [ main, develop ]
+    paths: [ 'mobile/**', '.github/workflows/mobile-ci.yml' ]
+
+env:
+  NODE_VERSION: '18'
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        cache: 'npm'
+        cache-dependency-path: mobile/package-lock.json
+
+    - name: Install dependencies
+      run: |
+        cd mobile
+        npm ci
+
+    - name: Run linting
+      run: |
+        cd mobile
+        npm run lint
+
+    - name: Run type checking
+      run: |
+        cd mobile
+        npm run type-check
+
+    - name: Run tests
+      run: |
+        cd mobile
+        npm test -- --coverage --watchAll=false
+
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v3
+      with:
+        file: ./mobile/coverage/lcov.info
+        flags: mobile
+        name: mobile-coverage
+
+  android-build:
+    needs: test
+    runs-on: macos-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        cache: 'npm'
+        cache-dependency-path: mobile/package-lock.json
+
+    - name: Set up JDK
+      uses: actions/setup-java@v3
+      with:
+        distribution: 'temurin'
+        java-version: '17'
+
+    - name: Setup Android SDK
+      uses: android-actions/setup-android@v3
+
+    - name: Install dependencies
+      run: |
+        cd mobile
+        npm ci
+
+    - name: Cache Gradle dependencies
+      uses: actions/cache@v3
+      with:
+        path: |
+          mobile/android/.gradle
+          mobile/android/app/build
+        key: ${{ runner.os }}-gradle-${{ hashFiles('mobile/android/gradle/wrapper/gradle-wrapper.properties') }}
+        restore-keys: |
+          ${{ runner.os }}-gradle-
+
+    - name: Build Android APK
+      run: |
+        cd mobile
+        npx react-native run-android --mode=release
+
+    - name: Upload Android APK
+      uses: actions/upload-artifact@v3
+      with:
+        name: android-apk
+        path: mobile/android/app/build/outputs/apk/release/*.apk
+
+  ios-build:
+    needs: test
+    runs-on: macos-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        cache: 'npm'
+        cache-dependency-path: mobile/package-lock.json
+
+    - name: Install dependencies
+      run: |
+        cd mobile
+        npm ci
+
+    - name: Install CocoaPods
+      run: |
+        cd mobile/ios
+        sudo gem install cocoapods
+
+    - name: Install iOS dependencies
+      run: |
+        cd mobile/ios
+        pod install
+
+    - name: Build iOS app
+      run: |
+        cd mobile
+        npx react-native run-ios --configuration Release
+
+    - name: Upload iOS build
+      uses: actions/upload-artifact@v3
+      with:
+        name: ios-build
+        path: mobile/ios/build/
+
+  security:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        cache: 'npm'
+        cache-dependency-path: mobile/package-lock.json
+
+    - name: Install dependencies
+      run: |
+        cd mobile
+        npm ci
+
+    - name: Run npm audit
+      run: |
+        cd mobile
+        npm audit --audit-level moderate
+
+    - name: Run Snyk security scan
+      uses: snyk/actions/node@master
+      env:
+        SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+      with:
+        args: --severity-threshold=high
+      continue-on-error: true
+
+  deploy-staging:
+    needs: [test, android-build, ios-build, security]
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/develop'
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Deploy to staging
+      run: |
+        echo "Deploying mobile app to staging..."
+        # Add staging deployment commands here
+        # Example: Deploy to TestFlight, Google Play Internal Testing
+
+  deploy-production:
+    needs: [test, android-build, ios-build, security]
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Deploy to production
+      run: |
+        echo "Deploying mobile app to production..."
+        # Add production deployment commands here
+        # Example: Deploy to App Store, Google Play Store
