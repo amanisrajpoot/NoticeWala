@@ -1,0 +1,112 @@
+[
+  {
+    "id": "1",
+    "name": "UPSC Official Website",
+    "base_url": "https://upsc.gov.in",
+    "type": "government",
+    "category": "competitive_exams",
+    "region": "national",
+    "description": "Union Public Service Commission official website for civil services and other examinations",
+    "crawl_frequency": 3600,
+    "is_active": true
+  },
+  {
+    "id": "2", 
+    "name": "SSC Official Portal",
+    "base_url": "https://ssc.nic.in",
+    "type": "government",
+    "category": "competitive_exams",
+    "region": "national",
+    "description": "Staff Selection Commission official portal for various government job examinations",
+    "crawl_frequency": 3600,
+    "is_active": true
+  },
+  {
+    "id": "3",
+    "name": "AICTE Official Site",
+    "base_url": "https://aicte-india.org",
+    "type": "government",
+    "category": "education",
+    "region": "national",
+    "description": "All India Council for Technical Education official website",
+    "crawl_frequency": 7200,
+    "is_active": true
+  },
+  {
+    "id": "4",
+    "name": "UGC Official Portal",
+    "base_url": "https://ugc.ac.in",
+    "type": "government", 
+    "category": "education",
+    "region": "national",
+    "description": "University Grants Commission official portal for higher education notifications",
+    "crawl_frequency": 7200,
+    "is_active": true
+  },
+  {
+    "id": "5",
+    "name": "CBSE Official Website",
+    "base_url": "https://cbse.gov.in",
+    "type": "government",
+    "category": "school_education",
+    "region": "national",
+    "description": "Central Board of Secondary Education official website",
+    "crawl_frequency": 3600,
+    "is_active": true
+  },
+  {
+    "id": "6",
+    "name": "JEE Main Official Site",
+    "base_url": "https://jeemain.nta.nic.in",
+    "type": "government",
+    "category": "engineering_entrance",
+    "region": "national",
+    "description": "Joint Entrance Examination Main official website",
+    "crawl_frequency": 1800,
+    "is_active": true
+  },
+  {
+    "id": "7",
+    "name": "NEET Official Portal",
+    "base_url": "https://neet.nta.nic.in",
+    "type": "government",
+    "category": "medical_entrance",
+    "region": "national",
+    "description": "National Eligibility cum Entrance Test official portal",
+    "crawl_frequency": 1800,
+    "is_active": true
+  },
+  {
+    "id": "8",
+    "name": "IIT Bombay",
+    "base_url": "https://www.iitb.ac.in",
+    "type": "university",
+    "category": "engineering_entrance",
+    "region": "maharashtra",
+    "description": "Indian Institute of Technology Bombay official website",
+    "crawl_frequency": 7200,
+    "is_active": true
+  },
+  {
+    "id": "9",
+    "name": "DU Official Website",
+    "base_url": "https://du.ac.in",
+    "type": "university",
+    "category": "undergraduate",
+    "region": "delhi",
+    "description": "Delhi University official website for admissions and notifications",
+    "crawl_frequency": 3600,
+    "is_active": true
+  },
+  {
+    "id": "10",
+    "name": "JNU Official Portal",
+    "base_url": "https://www.jnu.ac.in",
+    "type": "university",
+    "category": "postgraduate",
+    "region": "delhi",
+    "description": "Jawaharlal Nehru University official portal",
+    "crawl_frequency": 7200,
+    "is_active": true
+  }
+]
