@@ -45,11 +45,21 @@ class Settings(BaseSettings):
     
     # OpenAI
     OPENAI_API_KEY: Optional[str] = None
-    OPENAI_MODEL: str = "gpt-3.5-turbo"
+    OPENAI_MODEL: str = "gpt-4-turbo-preview"
+    OPENAI_MAX_TOKENS: int = 2000
+    OPENAI_TEMPERATURE: float = 0.1
+    AI_PROCESSING_ENABLED: bool = True
+    AI_CONFIDENCE_THRESHOLD: float = 0.8
     
     # Firebase/FCM
     FCM_SERVER_KEY: Optional[str] = None
     FCM_PROJECT_ID: Optional[str] = None
+    
+    # Stripe Payment Integration
+    STRIPE_SECRET_KEY: Optional[str] = None
+    STRIPE_PUBLISHABLE_KEY: Optional[str] = None
+    STRIPE_WEBHOOK_SECRET: Optional[str] = None
+    STRIPE_CURRENCY: str = "usd"
     
     # Scraping
     SCRAPING_USER_AGENT: str = "NoticeWala Bot 1.0 (Educational Purpose)"

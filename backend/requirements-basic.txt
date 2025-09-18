@@ -1,0 +1,47 @@
+# Core FastAPI and web framework
+fastapi
+uvicorn[standard]
+pydantic
+pydantic-settings
+
+# Database
+sqlalchemy
+alembic
+psycopg2-binary
+redis
+
+# Authentication and security
+python-jose[cryptography]
+passlib[bcrypt]
+python-multipart
+
+# Web scraping and crawling
+beautifulsoup4
+requests
+
+# AI and NLP
+openai
+dateparser
+
+# Background tasks
+celery
+
+# Search and indexing
+elasticsearch
+
+# Monitoring and logging
+structlog
+
+# Testing
+pytest
+pytest-asyncio
+httpx
+
+# Development tools
+black
+isort
+
+# Utilities
+python-dotenv
+pytz
+python-slugify

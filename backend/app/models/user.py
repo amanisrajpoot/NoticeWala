@@ -34,6 +34,9 @@ class User(Base):
     preferences = Column(JSON)  # User preferences and settings
     notification_settings = Column(JSON)  # Notification preferences
     
+    # Payment integration
+    stripe_customer_id = Column(String(255), unique=True, index=True)
+    
     # Metadata
     last_login = Column(DateTime(timezone=True))
     login_count = Column(Integer, default=0)
@@ -51,7 +54,7 @@ class User(Base):
 
 
 class Subscription(Base):
-    """User subscription model for filtering announcements"""
+    """User subscription model for filtering announcements and premium subscriptions"""
     
     __tablename__ = "subscriptions"
     
@@ -59,9 +62,21 @@ class Subscription(Base):
     user_id = Column(UUID(as_uuid=True), ForeignKey("users.id"), nullable=False)
     announcement_id = Column(UUID(as_uuid=True), ForeignKey("announcements.id"), nullable=True)
     
-    # Subscription filters
+    # Subscription filters (for announcement filtering)
     name = Column(String(200), nullable=False)  # User-defined name for subscription
     filters = Column(JSON)  # Filter criteria (categories, keywords, locations, etc.)
+    
+    # Premium subscription fields
+    tier = Column(String(50), default="free")  # free, basic, premium, enterprise
+    status = Column(String(50), default="active")  # active, cancelled, past_due, unpaid, trialing
+    stripe_subscription_id = Column(String(255), unique=True, index=True)
+    stripe_customer_id = Column(String(255), index=True)
+    
+    # Billing information
+    current_period_start = Column(DateTime(timezone=True))
+    current_period_end = Column(DateTime(timezone=True))
+    cancel_at_period_end = Column(Boolean, default=False)
+    cancelled_at = Column(DateTime(timezone=True))
     
     # Notification settings
     is_active = Column(Boolean, default=True)
@@ -82,7 +97,7 @@ class Subscription(Base):
     announcement = relationship("Announcement", back_populates="subscriptions")
     
     def __repr__(self):
-        return f"<Subscription(id={self.id}, user_id={self.user_id}, name='{self.name}')>"
+        return f"<Subscription(id={self.id}, user_id={self.user_id}, name='{self.name}', tier='{self.tier}')>"
 
 
 class PushToken(Base):
